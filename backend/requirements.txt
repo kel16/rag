@@ -1,0 +1,9 @@
+requests
+pypdf
+sentence-transformers
+numpy
+fastapi
+uvicorn
+pydantic
+chromadb
+litellm
