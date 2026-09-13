@@ -21,7 +21,15 @@ export default [
 
   {
     plugins: {
+      react: react,
+      "react-hooks": reactHooks,
       "simple-import-sort": simpleImportSort,
+    },
+
+    settings: {
+      react: {
+        version: "18.3.1",
+      },
     },
 
     rules: {

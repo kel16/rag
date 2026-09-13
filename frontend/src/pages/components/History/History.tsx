@@ -1,6 +1,7 @@
 import clsx from "clsx";
 
 import { IExchange } from "@/api/types";
+
 import { HistoryItem } from "./components";
 
 interface IHistoryProps {

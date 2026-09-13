@@ -5,9 +5,10 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.pipeline import RAGPipeline
-from app.schemas import QueryRequest, QueryResponse, HealthResponse
+from app.schemas import HealthResponse, QueryRequest, QueryResponse
 
 pipeline_state: dict = {}
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -31,6 +32,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 @app.get("/health", response_model=HealthResponse)
 async def health():
