@@ -18,7 +18,11 @@ Command:
 npm run dev
 ```
 
-Will start a dev server on localhost:5173
+Will start a dev server on
+
+```text
+http://127.0.0.1:5173
+```
 
 ### Tech stack
 
