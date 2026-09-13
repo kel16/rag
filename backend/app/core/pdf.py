@@ -1,6 +1,8 @@
 import glob
 import os
+
 from pypdf import PdfReader
+
 
 def resolve_pdf_paths(source: str | list[str]) -> list[str]:
     """
@@ -8,7 +10,7 @@ def resolve_pdf_paths(source: str | list[str]) -> list[str]:
       - a single PDF path
       - a directory containing PDFs
       - a list of PDF paths
-    
+
     Returns a flat list of PDF file paths.
     """
     if isinstance(source, list):

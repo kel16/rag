@@ -1,54 +1,264 @@
-# RAG on local documents
+# RAG on Local Documents
 
-## Structure
+A local Retrieval-Augmented Generation (RAG) application for asking questions about a collection of PDF documents.
 
-1. **Extract** text from each PDF using `pypdf`
-2. **Chunk** the text into 800-character pieces with 100 overlap, tagged with which document they came from
-3. **Embed** each chunk locally using `sentence-transformers`
-   (`all-MiniLM-L6-v2`)
-4. **Store** the embeddings in a **ChromaDB** collection locally
-5. On question send:
-   - The question is embedded the same way
-   - Vector DB finds the most similar chunks across *all* loaded documents
-6. **Generate**: send those chunks + your question to an LLM via **LiteLLM**, asking it to answer using only that context
-7. Return the answer, the source passages (with which document each came from), and per-stage latency
+The project processes documents locally, creates vector embeddings, retrieves relevant passages, and sends the retrieved context to a locally running LLM through Ollama.
 
-## Setup
+## RAG Pipeline
 
-### 1. Run Ollama locally
-To pull the model:
+The application follows these steps:
+
+1. **Extract** text from each PDF using `pypdf`.
+2. **Chunk** the extracted text into 800-character chunks with a 100-character overlap.
+3. **Embed** each chunk locally using `sentence-transformers` with `all-MiniLM-L6-v2`.
+4. **Store** the embeddings in a local ChromaDB collection.
+5. When a question is submitted:
+   - The question is embedded using the same embedding model.
+   - ChromaDB searches for the most similar chunks across all indexed documents.
+
+6. **Generate** an answer by sending the retrieved chunks and the question to a local LLM through Ollama.
+7. Return:
+   - the generated answer,
+   - the source passages,
+   - the source document for each passage,
+   - and per-stage latency information.
+
+## Tech Stack
+
+### Backend
+
+- Python
+- FastAPI
+- `uv` for dependency and environment management
+- Ruff
+- pypdf
+- sentence-transformers
+- ChromaDB
+- LiteLLM
+- Ollama
+
+### Frontend
+
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- ESLint
+- Prettier
+
+## Local Development
+
+### Prerequisites
+
+Install:
+
+- Python 3.12 or 3.13
+- `uv`
+- Node.js
+- npm
+- Ollama
+- Docker Desktop (optional, for containerized development)
+
+### 1. Start Ollama
+
+Install Ollama and pull the model:
+
 ```bash
 ollama pull phi3
 ```
 
-### 2. Install Python dependencies
+Make sure Ollama is running locally.
 
-```bash
-pip install -r requirements.txt
+### 2. Add documents
+
+Place PDF files in:
+
+```text
+documents/
 ```
 
-### 3. Put your PDFs to /documents
+The backend uses this directory as the document source.
 
-### Backend
+### 3. Backend
+
+Open a terminal in the backend directory:
 
 ```bash
-export DOCS_PATH="path/to/pdf_folder"
-uvicorn api:app --reload
+cd backend
 ```
 
-Open **http://127.0.0.1:8000/docs** - Swagger from the Pydantic models.
+Install/synchronize Python dependencies:
 
-Endpoints:
+```bash
+uv sync
+```
 
-- `GET /health` - confirms the pipeline is loaded, chunk count, and
-  which documents were indexed
-- `POST /query` - send `{"question": "...", "top_k": 3}`, get back
-  `{"question", "answer", "sources": [{"text", "source"}, ...], "timings_ms"}`
+Start FastAPI:
 
-### Frontend
+```bash
+uv run uvicorn app.api:app --reload
+```
+
+The API will be available at:
+
+```text
+http://127.0.0.1:8000
+```
+
+Interactive API documentation:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+### Backend Environment
+
+Start the server:
+
+```powershell
+uv run uvicorn app.api:app --reload
+```
+
+If the project is run from the repository root, the default configuration should point to:
+
+```text
+./documents
+```
+
+### Backend Endpoints
+
+#### `GET /health`
+
+Returns the current indexing/pipeline status, including:
+
+- whether the pipeline is loaded,
+- the number of indexed chunks,
+- and the documents that have been indexed.
+
+#### `POST /query`
+
+Submit a question:
+
+```json
+{
+  "question": "What is this document about?",
+  "top_k": 3
+}
+```
+
+The response contains:
+
+```json
+{
+  "question": "...",
+  "answer": "...",
+  "sources": [
+    {
+      "text": "...",
+      "source": "document.pdf"
+    }
+  ],
+  "timings_ms": {
+    "embedding": 0,
+    "retrieval": 0,
+    "generation": 0
+  }
+}
+```
+
+## Frontend
+
+Open another terminal:
 
 ```bash
 cd frontend
-npm i
+```
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Start the development server:
+
+```bash
 npm run dev
+```
+
+The frontend will be available at:
+
+```text
+http://localhost:5173
+```
+
+## Code Quality
+
+### Backend
+
+Run Ruff:
+
+```bash
+cd backend
+uv run ruff check .
+```
+
+Check formatting:
+
+```bash
+uv run ruff format --check .
+```
+
+Automatically format:
+
+```bash
+uv run ruff format .
+```
+
+## Git Hooks
+
+The project uses Lefthook to run checks automatically before commits and pushes.
+
+Install the Git hooks:
+
+```bash
+npx lefthook install
+```
+
+Run the pre-commit checks manually:
+
+```bash
+npx lefthook run pre-commit
+```
+
+Run the pre-push checks manually:
+
+```bash
+npx lefthook run pre-push
+```
+
+Pre-commit performs fast checks such as:
+
+```text
+Frontend
+├── ESLint
+└── Prettier
+
+Backend
+├── Ruff
+└── Ruff format
+```
+
+Pre-push performs the complete local validation:
+
+```text
+Frontend
+├── TypeScript typecheck
+├── ESLint
+├── Prettier check
+└── Production build
+
+Backend
+├── Ruff
+├── Format check
 ```

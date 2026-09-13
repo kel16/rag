@@ -5,11 +5,12 @@ import uuid
 import chromadb
 from sentence_transformers import SentenceTransformer
 
-from app.core.pdf import extract_text_from_pdf, resolve_pdf_paths
 from app.core.chunking import chunk_text
 from app.core.llm import ask_llm
+from app.core.pdf import extract_text_from_pdf, resolve_pdf_paths
 
 TOP_K = 3
+
 
 class RAGPipeline:
     """
@@ -78,10 +79,7 @@ class RAGPipeline:
         documents = results["documents"][0]
         metadatas = results["metadatas"][0]
 
-        return [
-            {"text": doc, "source": meta["source"]}
-            for doc, meta in zip(documents, metadatas)
-        ]
+        return [{"text": doc, "source": meta["source"]} for doc, meta in zip(documents, metadatas)]
 
     def query(self, question: str) -> dict:
         """

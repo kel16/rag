@@ -1,12 +1,12 @@
-interface SourceChunk {
+export interface ISourceChunk {
   text: string;
   source: string;
 }
 
-interface QueryResponse {
+export interface IQueryResponse {
   question: string;
   answer: string;
-  sources: SourceChunk[];
+  sources: ISourceChunk[];
   timings_ms: {
     retrieval_ms: number;
     generation_ms: number;
@@ -14,6 +14,6 @@ interface QueryResponse {
   };
 }
 
-interface Exchange extends QueryResponse {
-  id: number;
+export interface IExchange extends IQueryResponse {
+  id: string;
 }
