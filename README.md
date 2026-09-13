@@ -2,8 +2,6 @@
 
 A local Retrieval-Augmented Generation (RAG) application for asking questions about a collection of PDF documents.
 
-The project processes documents locally, creates vector embeddings, retrieves relevant passages, and sends the retrieved context to a locally running LLM through Ollama.
-
 ## RAG Pipeline
 
 The application follows these steps:
@@ -57,7 +55,6 @@ Install:
 - Node.js
 - npm
 - Ollama
-- Docker Desktop (optional, for containerized development)
 
 ### 1. Start Ollama
 
@@ -125,47 +122,6 @@ If the project is run from the repository root, the default configuration should
 ./documents
 ```
 
-### Backend Endpoints
-
-#### `GET /health`
-
-Returns the current indexing/pipeline status, including:
-
-- whether the pipeline is loaded,
-- the number of indexed chunks,
-- and the documents that have been indexed.
-
-#### `POST /query`
-
-Submit a question:
-
-```json
-{
-  "question": "What is this document about?",
-  "top_k": 3
-}
-```
-
-The response contains:
-
-```json
-{
-  "question": "...",
-  "answer": "...",
-  "sources": [
-    {
-      "text": "...",
-      "source": "document.pdf"
-    }
-  ],
-  "timings_ms": {
-    "embedding": 0,
-    "retrieval": 0,
-    "generation": 0
-  }
-}
-```
-
 ## Frontend
 
 Open another terminal:
@@ -190,29 +146,6 @@ The frontend will be available at:
 
 ```text
 http://localhost:5173
-```
-
-## Code Quality
-
-### Backend
-
-Run Ruff:
-
-```bash
-cd backend
-uv run ruff check .
-```
-
-Check formatting:
-
-```bash
-uv run ruff format --check .
-```
-
-Automatically format:
-
-```bash
-uv run ruff format .
 ```
 
 ## Git Hooks
@@ -262,3 +195,7 @@ Backend
 ├── Ruff
 ├── Format check
 ```
+
+## Example Screenshot
+
+<img src="imgs/screenshot_ui.png" width="500">
