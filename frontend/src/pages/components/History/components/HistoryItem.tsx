@@ -1,4 +1,4 @@
-import { IExchange } from "../../../../api/types";
+import { IExchange } from "@/api/types";
 
 export default function HistoryItem(exchange: IExchange) {
   return (
@@ -20,9 +20,7 @@ export default function HistoryItem(exchange: IExchange) {
         <div>
           <p className="text-sm font-medium text-slate-500">Answer</p>
 
-          <p className="mt-1 whitespace-pre-wrap leading-7 text-slate-700">
-            {exchange.answer}
-          </p>
+          <p className="mt-1 whitespace-pre-wrap leading-7 text-slate-700">{exchange.answer}</p>
         </div>
 
         {/* Sources */}
@@ -40,9 +38,7 @@ export default function HistoryItem(exchange: IExchange) {
                           pl-3 text-sm leading-6 text-slate-600
                         "
               >
-                <span className="font-medium text-slate-900">
-                  {source.source}
-                </span>
+                <span className="font-medium text-slate-900">{source.source}</span>
 
                 <span className="ml-2">{source.text}</span>
               </li>

@@ -10,10 +10,7 @@ export class ApiError extends Error {
   }
 }
 
-export async function client<T>(
-  path: string,
-  options?: RequestInit,
-): Promise<T> {
+export async function client<T>(path: string, options?: RequestInit): Promise<T> {
   let response: Response;
 
   try {
@@ -31,10 +28,7 @@ export async function client<T>(
   if (!response.ok) {
     const detail = await response.text();
 
-    throw new ApiError(
-      detail || `Request failed with status ${response.status}`,
-      response.status,
-    );
+    throw new ApiError(detail || `Request failed with status ${response.status}`, response.status);
   }
 
   return response.json() as Promise<T>;

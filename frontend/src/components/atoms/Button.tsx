@@ -1,9 +1,9 @@
-import { ButtonHTMLAttributes, PropsWithChildren } from "react";
 import clsx from "clsx";
+import { ButtonHTMLAttributes, PropsWithChildren } from "react";
 
 type TButtonProps = ButtonHTMLAttributes<HTMLButtonElement>;
 
-interface IButtonProps extends TButtonProps{
+interface IButtonProps extends TButtonProps {
   isDiabled?: boolean;
   className?: string;
 }
@@ -15,7 +15,8 @@ export default function Button(props: PropsWithChildren<IButtonProps>) {
     <button
       type="submit"
       disabled={isDiabled}
-      className={clsx(`
+      className={clsx(
+        `
               rounded-lg bg-blue-600 px-6 py-3
               font-medium text-white shadow-sm
               transition
@@ -26,8 +27,10 @@ export default function Button(props: PropsWithChildren<IButtonProps>) {
               focus:ring-offset-2
               disabled:cursor-not-allowed
               disabled:opacity-50
-            `, className)}
-    {...otherProps}
+            `,
+        className,
+      )}
+      {...otherProps}
     >
       {children}
     </button>

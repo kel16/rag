@@ -26,10 +26,7 @@ export function useRequest<T, TArgs extends unknown[]>(
 
       return result;
     } catch (error) {
-      const normalizedError =
-        error instanceof Error
-          ? error
-          : new Error("Something went wrong.");
+      const normalizedError = error instanceof Error ? error : new Error("Something went wrong.");
 
       setError(normalizedError);
 
