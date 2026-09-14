@@ -71,7 +71,7 @@ Make sure Ollama is running locally.
 Place PDF files in:
 
 ```text
-documents/
+backend/documents/
 ```
 
 The backend uses this directory as the document source.
@@ -106,20 +106,6 @@ Interactive API documentation:
 
 ```text
 http://127.0.0.1:8000/docs
-```
-
-### Backend Environment
-
-Start the server:
-
-```powershell
-uv run uvicorn app.api:app --reload
-```
-
-If the project is run from the repository root, the default configuration should point to:
-
-```text
-./documents
 ```
 
 ## Frontend
