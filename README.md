@@ -134,6 +134,52 @@ The frontend will be available at:
 http://localhost:5173
 ```
 
+## Docker
+
+Runs the backend and frontend as production builds in containers. Ollama
+itself is **not** containerized - so the image doesn't need to bundle
+an LLM runtime, and startup/build stays fast.
+
+### Prerequisites
+
+- Docker and Docker Compose
+- Ollama installed and running on your host, with the model pulled:
+
+  ```bash
+  ollama pull phi3
+  ```
+
+### 1. Add documents
+
+Place PDF files in `backend/documents/` - this
+folder is mounted into the backend container as a read-only volume.
+
+### 2. Build and start
+
+From the repository root:
+
+```bash
+docker compose up --build
+```
+
+This builds two images and starts them:
+
+- **backend** - a multi-stage build that installs the CPU-only build of
+  PyTorch and runs `uvicorn` directly, at `http://localhost:8000`.
+- **frontend** - a multi-stage build that compiles the app with
+  `npm run build` and serves the static output via nginx, at `http://localhost:5173`.
+
+The backend reaches Ollama on your host via `host.docker.internal`, wired
+up for both Docker Desktop (Mac/Windows) and Linux via the `extra_hosts`
+entry in `docker-compose.yml`. The Chroma index and the downloaded
+embedding model are kept in named volumes (`rag_db`, `hf_cache`).
+
+### Stopping
+
+```bash
+docker compose down
+```
+
 ## Git Hooks
 
 The project uses Lefthook to run checks automatically before commits and pushes.

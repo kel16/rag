@@ -26,7 +26,14 @@ export async function client<T>(path: string, options?: RequestInit): Promise<T>
   }
 
   if (!response.ok) {
-    const detail = await response.text();
+    let detail = "";
+
+    try {
+      const body = (await response.json()) as { detail?: string };
+      detail = body.detail ?? "";
+    } catch {
+      /* empty */
+    }
 
     throw new ApiError(detail || `Request failed with status ${response.status}`, response.status);
   }

@@ -1,0 +1,34 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      OLLAMA_API_BASE: http://host.docker.internal:11434
+      LLM_MODEL: ollama/phi3
+      DOCS_PATH: /app/documents
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./backend/documents:/app/documents:ro
+      - rag_db:/app/db
+      # Persists the downloaded sentence-transformers model across
+      # container rebuilds instead of re-downloading it every time.
+      - hf_cache:/home/appuser/.cache/huggingface
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: http://localhost:8000
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  rag_db:
+  hf_cache:
