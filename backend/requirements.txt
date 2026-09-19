@@ -5,5 +5,6 @@ numpy
 fastapi
 uvicorn
 pydantic
+pydantic-settings
 chromadb
 litellm

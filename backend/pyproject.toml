@@ -3,17 +3,18 @@ name = "rag-backend"
 version = "0.1.0"
 description = "FastAPI backend for the local RAG application"
 readme = "README.md"
-requires-python = ">=3.13,<3.14"
+requires-python = ">=3.13"
 dependencies = [
     "chromadb>=1.5.9",
     "fastapi>=0.141.1",
-    "litellm>=1.100.1",
+    "litellm>=1.101.0",
     "numpy>=2.5.3",
     "pydantic>=2.13.5",
-    "pypdf>=6.18.1",
+    "pydantic-settings>=2.15.0",
+    "pypdf>=6.19.0",
     "requests>=2.34.2",
-    "sentence-transformers>=6.0.1",
-    "uvicorn[standard]>=0.52.4",
+    "sentence-transformers>=6.1.0",
+    "uvicorn>=0.53.0",
 ]
 
 [dependency-groups]

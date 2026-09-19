@@ -1,23 +1,21 @@
-import os
-
 from litellm import completion
 from litellm.exceptions import APIConnectionError, APIError, Timeout
 
-LLM_MODEL = os.environ.get("LLM_MODEL", "ollama/phi3")
-OLLAMA_API_BASE = os.environ.get("OLLAMA_API_BASE", "http://localhost:11434")
+from app.config import settings
+from app.schemas import SourceChunk
 
 
 def call_llm(prompt: str) -> str:
     try:
         response = completion(
-            model=LLM_MODEL,
+            model=settings.llm_model,
             messages=[{"role": "user", "content": prompt}],
-            api_base=OLLAMA_API_BASE,
-            timeout=60,
+            api_base=settings.ollama_api_base,
+            timeout=settings.llm_timeout_seconds,
         )
     except APIConnectionError as exc:
         raise RuntimeError(
-            f"Could not reach the LLM at {OLLAMA_API_BASE}. Is Ollama running?"
+            f"Could not reach the LLM at {settings.ollama_api_base}. Is Ollama running?"
         ) from exc
     except Timeout as exc:
         raise RuntimeError("The LLM took too long to respond.") from exc
@@ -28,16 +26,16 @@ def call_llm(prompt: str) -> str:
     if not choices or not choices[0].get("message", {}).get("content"):
         raise RuntimeError("The LLM returned an empty response.")
 
-    return choices[0]["message"]["content"]
+    content = choices[0]["message"]["content"]
+    return str(content)
 
 
-def ask_llm(question: str, context_chunks: list[dict]) -> str:
+def ask_llm(question: str, context_chunks: list[SourceChunk]) -> str:
     """
-    context_chunks: list of {"text": ..., "source": ...} dicts, so the
-    prompt can tell the model which document each piece of context came
-    from.
+    context_chunks: retrieved passages, so the prompt can tell the model
+    which document each piece of context came from.
     """
-    context = "\n\n---\n\n".join(f"[Source: {c['source']}]\n{c['text']}" for c in context_chunks)
+    context = "\n\n---\n\n".join(f"[Source: {c.source}]\n{c.text}" for c in context_chunks)
 
     prompt = (
         "Answer the question using ONLY the context below. "

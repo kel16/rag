@@ -1,5 +1,6 @@
 documents/
 db/
+.env
 
 node_modules
 .vscode

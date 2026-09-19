@@ -1,27 +1,27 @@
 import asyncio
 import logging
-import os
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.config import settings
 from app.core.pipeline import RAGPipeline
 from app.schemas import HealthResponse, QueryRequest, QueryResponse
 
 logger = logging.getLogger("rag")
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=settings.log_level)
 
-pipeline_state: dict = {}
+pipeline_state: dict[str, RAGPipeline | None] = {}
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
-    docs_path = os.environ.get("DOCS_PATH", "./documents")
-    logger.info("Loading and embedding documents from: %s", docs_path)
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    logger.info("Loading and embedding documents from: %s", settings.docs_path)
 
     try:
-        pipeline_state["pipeline"] = await asyncio.to_thread(RAGPipeline, docs_path)
+        pipeline_state["pipeline"] = await asyncio.to_thread(RAGPipeline, settings.docs_path)
         logger.info("Ready.")
     except Exception:
         logger.exception("Failed to build the RAG pipeline at startup")
@@ -39,14 +39,14 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=settings.cors_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
 @app.get("/health", response_model=HealthResponse)
-async def health():
+async def health() -> HealthResponse:
     pipeline = pipeline_state.get("pipeline")
 
     if pipeline is None:
@@ -60,7 +60,7 @@ async def health():
 
 
 @app.post("/query", response_model=QueryResponse)
-async def query(request: QueryRequest):
+async def query(request: QueryRequest) -> QueryResponse:
     pipeline = pipeline_state.get("pipeline")
 
     if pipeline is None:

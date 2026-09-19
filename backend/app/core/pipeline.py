@@ -1,15 +1,22 @@
 import os
 import time
 import uuid
+from typing import TypedDict
 
 import chromadb
 from sentence_transformers import SentenceTransformer
 
+from app.config import settings
 from app.core.chunking import chunk_text
 from app.core.llm import ask_llm
 from app.core.pdf import extract_text_from_pdf, resolve_pdf_paths
+from app.schemas import SourceChunk
 
-TOP_K = 3
+
+class QueryResult(TypedDict):
+    answer: str
+    sources: list[SourceChunk]
+    timings_ms: dict[str, float]
 
 
 class RAGPipeline:
@@ -21,12 +28,15 @@ class RAGPipeline:
     def __init__(
         self,
         source: str | list[str],
-        default_top_k: int = TOP_K,
-        persist_dir: str = "./db",
-        collection_name: str = "documents",
+        default_top_k: int | None = None,
+        persist_dir: str | None = None,
+        collection_name: str | None = None,
     ):
-        self.default_top_k = default_top_k
-        self.embed_model = SentenceTransformer("all-MiniLM-L6-v2")
+        self.default_top_k = default_top_k if default_top_k is not None else settings.default_top_k
+        persist_dir = persist_dir or settings.persist_dir
+        collection_name = collection_name or settings.collection_name
+
+        self.embed_model = SentenceTransformer(settings.embedding_model)
 
         pdf_paths = resolve_pdf_paths(source)
         self.document_names = [os.path.basename(p) for p in pdf_paths]
@@ -41,7 +51,7 @@ class RAGPipeline:
         self.collection = client.create_collection(collection_name)
 
         all_chunks: list[str] = []
-        all_metadatas: list[dict] = []
+        all_metadatas: list[dict[str, str | int]] = []
         all_ids: list[str] = []
 
         for pdf_path in pdf_paths:
@@ -53,7 +63,11 @@ class RAGPipeline:
                 print(f"Skipping {pdf_path}: failed to extract text ({exc})")
                 continue
 
-            doc_chunks = chunk_text(text)
+            doc_chunks = chunk_text(
+                text,
+                chunk_size=settings.chunk_size,
+                overlap=settings.chunk_overlap,
+            )
             doc_name = os.path.basename(pdf_path)
 
             if not doc_chunks:
@@ -87,7 +101,7 @@ class RAGPipeline:
             metadatas=all_metadatas,
         )
 
-    def retrieve(self, question: str, top_k: int | None = None) -> list[dict]:
+    def retrieve(self, question: str, top_k: int | None = None) -> list[SourceChunk]:
         """
         top_k is passed in per-call (not read from self) so concurrent
         requests with different top_k values never interfere with each
@@ -107,9 +121,12 @@ class RAGPipeline:
         documents = results["documents"][0]
         metadatas = results["metadatas"][0]
 
-        return [{"text": doc, "source": meta["source"]} for doc, meta in zip(documents, metadatas)]
+        return [
+            SourceChunk(text=doc, source=str(meta["source"]))
+            for doc, meta in zip(documents, metadatas)
+        ]
 
-    def query(self, question: str, top_k: int | None = None) -> dict:
+    def query(self, question: str, top_k: int | None = None) -> QueryResult:
         """
         Answer a question and report per-stage latency (ms). Timing each
         stage separately is what lets you find the actual bottleneck
